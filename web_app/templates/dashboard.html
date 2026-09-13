@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Quant | Trading Desk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg:#f1f5f9; --panel:#ffffff; --panel-raised:#f8fafc; --inset:#f8fafc; --line:#e2e8f0; --line-strong:#cbd5e1; --primary:#0f172a; --secondary:#64748b; --muted:#64748b; --blue:#0284c7; --blue-soft:#6366f1; --amber:#d97706; --violet:#6366f1; --gain:#059669; --loss:#e11d48; }
+        * { box-sizing:border-box; } body { margin:0; min-width:320px; background:var(--bg); color:var(--primary); font-family:Inter,sans-serif; }
+        .mono, table, .metric-value { font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }.panel { border:1px solid var(--line-strong); border-radius:3px; background:var(--panel); }.market-panel { background:var(--panel); }.label { color:var(--secondary); font-family:Inter,sans-serif; font-size:12px; font-weight:500; letter-spacing:.02em; }.metric-value { color:var(--primary); font-size:22px; font-weight:600; letter-spacing:-.04em; line-height:1; }.gain{color:var(--gain)}.loss{color:var(--loss)}.blue{color:var(--blue)}.amber{color:var(--amber)}
+        .dot,.status-amber{display:inline-block;width:6px;height:6px;border-radius:50%;animation:status-pulse 1.8s ease-in-out infinite}.dot{background:var(--gain)}.status-amber{background:var(--violet)}.ticker-item{border-right:1px solid var(--line);padding:0 14px;white-space:nowrap}.ticker-item:first-child{padding-left:0}.ticker-up{color:var(--gain)}.ticker-down{color:var(--loss)}@keyframes status-pulse{50%{box-shadow:0 0 0 4px rgba(99,102,241,.18)}}
+        table{width:100%;border-collapse:collapse}th{border-bottom:1px solid var(--line);color:var(--secondary);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.12em;padding:8px 12px;text-align:left;text-transform:uppercase;white-space:nowrap;background:var(--inset)}td{border-bottom:1px solid var(--line);color:#334155;font-size:12px;padding:7px 12px;white-space:nowrap}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:var(--panel-raised)}.signal{border:1px solid var(--line-strong);border-radius:3px;display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;padding:2px 5px}.signal-buy{border-color:#a7f3d0;background:#ecfdf5;color:var(--gain)}.signal-sell{border-color:#fecdd3;background:#fff1f2;color:var(--loss)}.tag{border:1px solid var(--line-strong);border-radius:3px;display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;padding:2px 5px}.tag.open{border-color:#a7f3d0;background:#ecfdf5;color:var(--gain)}.tag.closed{border-color:var(--line-strong);background:var(--panel-raised);color:var(--secondary)}
+        .gauge{position:relative;width:92px;height:5px;background:linear-gradient(90deg,var(--loss) 0%,#5f6779 48%,#5f6779 52%,var(--gain) 100%);border-radius:2px}.gauge::before{content:'';position:absolute;left:50%;top:-3px;width:1px;height:11px;background:var(--primary)}.gauge-fill{position:absolute;top:-2px;width:9px;height:9px;border-radius:50%;transform:translateX(-50%);background:var(--blue);border:1px solid var(--primary)}.gauge-fill.alert-pos{background:var(--amber);box-shadow:0 0 8px rgba(245,166,35,.7)}.gauge-fill.alert-neg{background:var(--amber);box-shadow:0 0 8px rgba(245,166,35,.7)}.threshold{border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;margin-left:6px;padding:2px 4px}.threshold.pos,.threshold.neg{background:rgba(245,166,35,.14);color:var(--amber)}
+        .terminal { background:#f8fafc; border:1px solid var(--line-strong); color:#334155; font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.8; min-height:230px; }.terminal .system{color:var(--violet)}.terminal .heartbeat{color:var(--gain)}.terminal .pass{color:#64748b}.terminal .cursor{display:inline-block;width:7px;height:13px;background:var(--gain);vertical-align:-2px;animation:blink 1s steps(2,start) infinite}@keyframes blink{50%{opacity:0}}
+        /* Elevation overrides preserve the terminal grid while separating layers. */
+        header { background:var(--panel) !important; border-color:var(--line-strong) !important; } header > div:nth-child(2) { background:var(--inset) !important; border-color:var(--line) !important; } header span, header a { color:#475569; } header span.font-semibold { color:var(--primary) !important; } header span.border { border-color:var(--violet) !important; color:var(--violet) !important; animation:status-pulse 1.8s ease-in-out infinite; }
+        main > section.grid:first-of-type > article:nth-child(1) { border-top:2px solid var(--gain); background:#ecfdf5; } main > section.grid:first-of-type > article:nth-child(2) { border-top:2px solid var(--blue); background:#eff6ff; } main > section.grid:first-of-type > article:nth-child(3) { border-top:2px solid var(--violet); background:#eef2ff; } main > section.grid:first-of-type > article:nth-child(4) { border-top:2px solid var(--loss); background:#fff1f2; }
+        .panel:has(#equity-curve), .panel:has(table) { background:var(--panel); } .panel:has(#equity-curve) > div:first-child, .panel:has(table) > div:first-child { background:var(--panel-raised); border-color:var(--line) !important; }
+    </style>
+</head>
+<body class="min-h-screen w-full">
+    <header class="border-b border-slate-700/60 bg-[#161f30]">
+        <div class="flex h-8 items-center justify-between gap-3 px-3 mono text-[10px] tracking-wider text-[#787b86]"><div class="flex items-center gap-3 whitespace-nowrap"><span class="font-semibold text-[#d1d4dc]">ALPHA QUANT DESK</span><span class="border border-[#2a2e39] px-1.5 py-0.5 text-[#d1d4dc]">PAPER</span><span class="hidden sm:inline">SYSTEMATIC PAIR TRADING</span></div><div class="flex items-center gap-3 whitespace-nowrap"><span><i class="dot mr-1.5"></i>CONNECTED</span><span class="hidden md:inline">UTC <span id="utc-clock">--:--:--</span></span><a class="font-semibold text-[#d1d4dc]" href="/">TERMINAL</a><a class="hover:text-[#d1d4dc]" href="/positions">POSITIONS</a><a class="hover:text-[#d1d4dc]" href="/logout">SIGN OUT</a></div></div>
+        <div class="overflow-hidden border-t border-[#2a2e39] bg-[#0d1016]"><div class="flex h-7 items-center px-3 mono text-[10px] text-[#9aa0a6]"><span class="mr-4 text-[#787b86]">MARKET TAPE</span><div class="flex min-w-max"><span class="ticker-item">AAPL-MSFT <b class="ticker-up ml-1">▲ 0.42</b></span><span class="ticker-item">NVDA-AMD <b class="ticker-down ml-1">▼ -0.31</b></span><span class="ticker-item">KO-PEP <b class="ticker-up ml-1">▲ 0.08</b></span><span class="ticker-item">JPM-BAC <b class="ticker-down ml-1">▼ -0.16</b></span><span class="ticker-item">XOM-CVX <b class="ticker-up ml-1">▲ 0.27</b></span></div></div></div>
+    </header>
+
+    <main class="w-full px-3 py-3">
+        <div class="mb-3 flex items-end justify-between border-b border-[#2a2e39] pb-2"><div><p class="label">Market surveillance</p><h1 class="mt-1 text-base font-semibold tracking-tight text-[#d1d4dc]">Statistical Arbitrage Desk</h1></div><p class="mono text-[10px] text-[#787b86]">SIGNAL ENGINE / SESSION ACTIVE</p></div>
+        <section class="grid grid-cols-2 gap-2 xl:grid-cols-4">
+            <article class="panel p-3"><p class="label">Net trading PnL</p><p class="metric-value mt-3 {% if '-' in metrics['Total PnL'] %}loss{% else %}gain{% endif %}">{{ metrics['Total PnL'] if metrics['Total PnL'] else '$0.00' }}</p><p class="mono mt-2 text-[10px] text-[#787b86]">CLOSED LEDGER AGGREGATE</p></article>
+            <article class="panel p-3"><p class="label">Win rate</p><p class="metric-value mt-3">{{ metrics['Win Rate'] if metrics['Win Rate'] else '0.00%' }}</p><p class="mono mt-2 text-[10px] text-[#787b86]">CLOSED TRADE QUALITY</p></article>
+            <article class="panel p-3"><p class="label">Profit factor</p><p class="metric-value mt-3">{{ metrics['Profit Factor'] if metrics['Profit Factor'] else '0.00' }}</p><p class="mono mt-2 text-[10px] text-[#787b86]">GROSS PROFIT / LOSS</p></article>
+            <article class="panel p-3"><p class="label">Max drawdown</p><p class="metric-value mt-3 loss">{{ metrics['Max Drawdown'] if metrics['Max Drawdown'] else '$0.00' }}</p><p class="mono mt-2 text-[10px] text-[#787b86]">PEAK TO TROUGH</p></article>
+        </section>
+
+        <section class="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-12">
+            <div class="space-y-3 xl:col-span-9">
+                <section class="panel overflow-hidden"><div class="flex items-center justify-between border-b border-[#2a2e39] px-3 py-2"><p class="label">Pair signals</p><span class="mono text-[10px] text-[#787b86]">{{ total_opportunities }} ACTIVE CANDIDATES</span></div><div class="overflow-x-auto"><table><thead><tr><th>Pair</th><th>Z-score / deviation</th><th>Leg A</th><th>Leg B</th><th>Coint p-value</th><th>Execution bias</th></tr></thead><tbody>
+                    {% if opportunities %}{% for f in opportunities %}{% set z = f.z_score|float %}{% set gauge = 0 if z <= -3 else (100 if z >= 3 else ((z + 3) / 6 * 100)) %}<tr><td class="font-semibold text-[#d1d4dc]">{{ f.pair }}</td><td><div class="flex items-center gap-2"><span class="{% if z > 0 %}loss{% else %}gain{% endif %}">{{ f.z_score }}</span><div class="gauge"><i class="gauge-fill {% if z >= 2 %}alert-pos{% elif z <= -2 %}alert-neg{% endif %}" style="left:{{ '%.2f'|format(gauge) }}%"></i></div>{% if z >= 2 %}<span class="threshold pos">ENTRY +</span>{% elif z <= -2 %}<span class="threshold neg">ENTRY -</span>{% endif %}</div></td><td>${{ "{:,.2f}".format(f.price_A|float) if f.price_A else '0.00' }}</td><td>${{ "{:,.2f}".format(f.price_B|float) if f.price_B else '0.00' }}</td><td class="text-[#9aa0a6]">{{ f.p_value }}</td><td><span class="signal {% if 'BUY' in f.action and f.action.startswith('BUY') %}signal-buy{% else %}signal-sell{% endif %}">{{ f.action }}</span></td></tr>{% endfor %}{% else %}<tr><td colspan="6" class="py-6 text-center font-sans text-xs text-[#787b86]">Awaiting statistical arbitrage triggers...</td></tr>{% endif %}
+                </tbody></table></div></section>
+
+                <section class="panel overflow-hidden"><div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2"><p class="label">Live exposure heatmap</p><span class="mono text-[10px] text-slate-500">NET DIRECTIONAL OPEN LEGS</span></div><div class="flex min-h-[72px] flex-wrap items-center gap-2 p-3">{% if exposure_map %}{% for exposure in exposure_map %}<div class="inline-flex items-center gap-2 border px-2 py-1.5 font-mono text-[11px] font-semibold {% if exposure.net_side == 'LONG' %}border-emerald-200 bg-emerald-50 text-emerald-700{% elif exposure.net_side == 'SHORT' %}border-rose-200 bg-rose-50 text-rose-700{% else %}border-slate-300 bg-slate-50 text-slate-600{% endif %}"><span>{{ exposure.symbol }}</span><span class="border-l border-current/20 pl-2">{{ exposure.net_side }}</span><span class="opacity-70">{{ exposure.count }}x</span></div>{% endfor %}{% else %}<p class="font-mono text-[11px] text-slate-500">No open directional exposure.</p>{% endif %}</div></section>
+
+                <section class="panel p-3"><div class="mb-2 flex items-center justify-between"><p class="label">Cumulative performance / PnL equity curve</p><span id="equity-state" class="mono text-[10px] text-[#787b86]">BASELINE</span></div><div class="h-[260px] w-full"><canvas id="equity-curve" aria-label="Cumulative performance equity curve" role="img"></canvas></div></section>
+
+                {% if trades is defined and trades %}<section class="panel overflow-hidden"><div class="flex items-center justify-between border-b border-[#2a2e39] px-3 py-2"><p class="label">Recent executions / closed trades</p><span class="mono text-[10px] text-[#787b86]">{{ trades | length }} RECORDS</span></div><div class="overflow-x-auto"><table><thead><tr><th>Pair</th><th>Side</th><th>Opened</th><th>Status</th><th class="text-right">PnL</th></tr></thead><tbody>{% for trade in trades %}<tr><td class="font-semibold text-[#d1d4dc]">{{ trade.pair }}</td><td>{{ trade.action }}</td><td>{% if trade.entry_time %}{{ trade.entry_time.strftime('%Y-%m-%d %H:%M') }}{% else %}--{% endif %}</td><td><span class="tag {% if trade.status == 'OPEN' %}open{% else %}closed{% endif %}">{{ trade.status }}</span></td><td class="text-right {% if trade.pnl and trade.pnl > 0 %}gain{% elif trade.pnl and trade.pnl < 0 %}loss{% endif %}">{% if trade.pnl is not none %}{% if trade.pnl > 0 %}+{% endif %}${{ "{:,.2f}".format(trade.pnl) }}{% else %}--{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>{% endif %}
+            </div>
+            <aside class="panel xl:col-span-3"><div class="border-b border-[#2a2e39] px-3 py-2"><p class="label">Hermes shadow audit</p><div class="mono mt-1 text-xs"><i class="status-amber mr-1.5"></i><span class="amber">MONITOR ARMED</span></div></div><div class="terminal m-2 p-2"><div><span class="system">[SYSTEM]</span> ledger transport initialized</div><div><span class="heartbeat">[HEARTBEAT]</span> UDP loopback / healthy</div><div><span class="pass">[AUDIT PASS]</span> no terminal violations</div><div><span class="system">[MODEL]</span> diagnosis channel on demand</div><div><span class="heartbeat">[WATCH]</span> pair stability monitor armed</div><div><span class="text-[#787b86]">hermes@audit:~$</span> <i class="cursor"></i></div></div><section class="m-2 border border-slate-300 bg-white"><div class="border-b border-slate-200 bg-slate-50 px-2 py-2"><p class="label">Gatekeeper filter log</p></div><div class="max-h-40 overflow-y-auto font-mono text-[10px]">{% if rejection_logs %}{% for rejection in rejection_logs %}<div class="border-b border-slate-100 px-2 py-2 last:border-b-0"><span class="text-rose-600">[REJECT]</span> <span class="font-semibold text-slate-700">{{ rejection.pair }}</span><br><span class="text-slate-500">{{ rejection.occurred_at }} · {{ rejection.reason }}</span></div>{% endfor %}{% else %}<div class="px-2 py-3 text-slate-500">No active rejections.</div>{% endif %}</div></section><section class="m-2 border border-indigo-200 bg-white"><div class="flex items-center justify-between border-b border-indigo-100 bg-indigo-50 px-2 py-2"><p class="label text-indigo-700">Hermes masa brifingi</p><button id="desk-briefing-button" type="button" class="border border-indigo-300 bg-white px-2 py-1 font-mono text-[10px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:cursor-wait disabled:opacity-60">Risk Masası Brifingi Al</button></div><div id="desk-briefing-output" class="min-h-[54px] whitespace-pre-wrap px-2 py-3 font-sans text-xs leading-5 text-slate-600">Brifing henüz istenmedi.</div></section>{% if error is defined and error %}<div class="m-2 border border-[#f23645] bg-[#f23645]/10 p-2 mono text-xs text-[#f23645]">{{ error }}</div>{% endif %}</aside>
+        </section>
+    </main>
+    <script>
+        const clock = document.getElementById('utc-clock');
+        const updateClock = () => { clock.textContent = new Date().toISOString().slice(11, 19); };
+        updateClock(); setInterval(updateClock, 1000);
+        const tradePnls = [{% if trades is defined and trades %}{% for trade in trades %}{{ (trade.pnl or 0)|float }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}];
+        const pnlSeries = tradePnls.length ? tradePnls.reduce((curve, pnl) => { curve.push(curve[curve.length - 1] + pnl); return curve; }, [0]) : [0, 0];
+        const labels = pnlSeries.map((_, index) => index === 0 ? 'START' : `T${index}`);
+        const isPositive = pnlSeries[pnlSeries.length - 1] >= 0;
+        const lineColor = isPositive ? '#059669' : '#0284c7';
+        document.getElementById('equity-state').textContent = tradePnls.length ? `${tradePnls.length} CLOSED TRADES` : 'AWAITING EXECUTIONS';
+        const canvas = document.getElementById('equity-curve');
+        const context = canvas.getContext('2d');
+        const fill = context.createLinearGradient(0, 0, 0, 260);
+        fill.addColorStop(0, isPositive ? 'rgba(5,150,105,.14)' : 'rgba(2,132,199,.10)');
+        fill.addColorStop(1, 'rgba(2,132,199,0)');
+        new Chart(context, { type:'line', data:{ labels, datasets:[{ data:pnlSeries, borderColor:lineColor, backgroundColor:fill, fill:true, borderWidth:2, pointRadius:tradePnls.length ? 2 : 0, pointHoverRadius:4, tension:.28 }] }, options:{ responsive:true, maintainAspectRatio:false, animation:{ duration:700 }, plugins:{ legend:{ display:false }, tooltip:{ displayColors:false, backgroundColor:'#ffffff', borderColor:'#cbd5e1', borderWidth:1, titleColor:'#0f172a', bodyColor:'#334155', callbacks:{ label:(item)=>` PnL ${item.parsed.y.toFixed(2)}` } } }, scales:{ x:{ grid:{ color:'rgba(148,163,184,.25)' }, border:{ color:'#cbd5e1' }, ticks:{ color:'#64748b', font:{ family:'JetBrains Mono', size:10 } } }, y:{ grid:{ color:'rgba(148,163,184,.25)' }, border:{ color:'#cbd5e1' }, ticks:{ color:'#64748b', font:{ family:'JetBrains Mono', size:10 }, callback:(value)=>value.toFixed(0) } } } } });
+        const briefingButton = document.getElementById('desk-briefing-button');
+        const briefingOutput = document.getElementById('desk-briefing-output');
+        briefingButton.addEventListener('click', async () => {
+            briefingButton.disabled = true;
+            briefingButton.textContent = 'Yükleniyor...';
+            briefingOutput.textContent = 'Hermes ledger ve risk kontrolleri özetleniyor...';
+            try {
+                const response = await fetch('/api/hermes/desk-briefing');
+                if (response.status === 429) {
+                    briefingOutput.textContent = 'İstek limiti aşıldı, lütfen biraz bekleyin.';
+                    return;
+                }
+                const payload = await response.json();
+                if (!response.ok) throw new Error(payload.detail || 'Briefing request failed');
+                briefingOutput.textContent = payload.briefing || 'Brifing üretilemedi.';
+            } catch (error) {
+                briefingOutput.textContent = 'Brifing alınamadı. Salt veri özetini daha sonra tekrar deneyin.';
+            } finally {
+                briefingButton.disabled = false;
+                briefingButton.textContent = 'Risk Masası Brifingi Al';
+            }
+        });
+    </script>
+</body>
+</html>

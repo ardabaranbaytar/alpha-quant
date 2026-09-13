@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Quant | Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#090d16;--panel:#111827;--line:#1e293b;--text:#e2e8f0;--muted:#64748b;--mint:#10b981;--rose:#f43f5e;--blue:#38bdf8}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,sans-serif}.mono,input,button{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px}.label{color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}input{width:100%;background:#0b0f19;border:1px solid var(--line);border-radius:4px;color:var(--text);font-size:13px;padding:11px 12px;outline:0}input:focus{border-color:var(--blue)}button{background:#0f172a;border:1px solid #334155;border-radius:4px;color:#e2e8f0;font-size:12px;font-weight:600;letter-spacing:.06em;padding:11px 12px;text-transform:uppercase;width:100%}button:hover{border-color:var(--blue);color:#fff}.error{border:1px solid #881337;border-radius:4px;background:#250b16;color:#fda4af;font-size:12px;padding:10px 12px}
+    </style>
+</head>
+<body class="min-h-screen">
+    <main class="mx-auto flex min-h-screen max-w-[420px] items-center px-5">
+        <section class="panel w-full p-6">
+            <p class="mono text-sm font-bold tracking-tight text-slate-100">ALPHA QUANT</p>
+            <div class="mt-6 border-t border-slate-800 pt-5"><p class="label">Secure terminal access</p><h1 class="mt-1 text-xl font-semibold">Sign in</h1><p class="mt-2 text-sm leading-6 text-slate-500">Authenticate to access the execution and risk-monitoring terminal.</p></div>
+            {% if error %}<div class="error mt-5">{{ error }}</div>{% endif %}
+            <form method="post" action="/login" autocomplete="off" class="mt-5 space-y-4">
+                <div><label class="label" for="username">Username</label><input id="username" name="username" type="text" required autofocus autocomplete="username"></div>
+                <div><label class="label" for="password">Password</label><input id="password" name="password" type="password" required autocomplete="current-password"></div>
+                <button type="submit">Authenticate</button>
+            </form>
+            <p class="mono mt-6 border-t border-slate-800 pt-4 text-[10px] tracking-wide text-slate-600">ALPHA QUANT / PAPER EXECUTION ENVIRONMENT</p>
+        </section>
+    </main>
+</body>
+</html>

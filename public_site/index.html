@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Alpha Quant simulation performance. Explore completed simulated trades, realized results, and the methodology behind the numbers.">
+  <meta name="color-scheme" content="light">
+  <title>Alpha Quant | Simulation Performance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,650;0,700;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" defer></script>
+  <script src="results.js" defer></script>
+  <script src="demo-data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <canvas id="bg-scene" aria-hidden="true"></canvas>
+  <div id="cursor-glow" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Skip to results</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#overview" aria-label="Alpha Quant overview">ALPHA QUANT<span class="brand-reg">&reg;</span></a>
+      <nav aria-label="Main navigation">
+        <a href="#overview" data-view="overview" aria-current="page">Overview</a>
+        <a href="#trades" data-view="trades">Closed Trades</a>
+        <a href="#methodology" data-view="methodology">Methodology</a>
+      </nav>
+      <span class="header-status">EN / RESEARCH</span>
+    </div>
+  </header>
+  <div class="demo-band"><div class="container"><span class="demo-tag" id="data-kind">SIMULATION</span><span id="data-disclaimer">Historical simulations are not live investment returns.</span></div></div>
+  <main id="main" class="container">
+    <div id="fatal-error" class="error-state" role="alert" hidden><h1>Results unavailable</h1><p>The results could not be verified. No performance data is displayed.</p><button type="button" onclick="location.reload()">Try again</button></div>
+    <div id="application" hidden>
+      <section class="page-heading blueprint">
+        <i class="corner tl" aria-hidden="true"></i><i class="corner tr" aria-hidden="true"></i><i class="corner bl" aria-hidden="true"></i><i class="corner br" aria-hidden="true"></i>
+        <p class="hero-tagline" id="hero-tagline"></p>
+        <div><h1 id="page-title">We are <em>Alpha Quant</em><span class="heading-dot">.</span></h1><p id="page-description">An independent quantitative arbitrage &amp; statistical arbitrage research engine.</p></div>
+        <div class="snapshot"><span class="snapshot-label" id="snapshot-label">RESULTS SNAPSHOT</span><strong id="snapshot-date"></strong><span>Closed results only</span></div>
+      </section>
+      <section class="monument-numbers" id="monument-numbers" aria-label="Headline performance figures"></section>
+      <section class="hero-metrics" id="hero-metrics" aria-label="Secondary performance metrics">
+        <div class="hero-cards" id="hero-cards"></div>
+      </section>
+      <div id="result-controls" class="filter-bar">
+        <div class="period-control" role="group" aria-label="Reporting period"><button type="button" data-period="all" class="active" aria-pressed="true">All time</button><button type="button" data-period="90" aria-pressed="false">90 days</button><button type="button" data-period="30" aria-pressed="false">30 days</button></div>
+        <span id="period-caption" class="period-caption"></span>
+        <span class="closed-label"><span class="status-dot"></span>Realized results</span>
+      </div>
+      <section id="view-overview" aria-label="Performance overview">
+        <div id="no-closed-results" class="empty-state" hidden><h2>No closed simulations in this period</h2><p>No realized trade outcomes are available. Zero realized P&amp;L is not evidence of zero risk.</p></div>
+        <section class="topology-section" aria-label="Three-dimensional realized P&amp;L topology by sector and quarter">
+          <div class="section-heading"><div><span class="eyebrow">Installation 03</span><h2>3D realized P&amp;L topology</h2><p>Closed-trade net P&amp;L by sector and evaluation quarter. Drag to rotate, scroll to zoom.</p></div></div>
+          <div class="topology-wrap topology-frameless">
+            <canvas id="topology-canvas" role="img" aria-label="Three-dimensional bar grid of closed-trade net profit and loss by sector and quarter"></canvas>
+            <div id="topology-tooltip" class="chart-tooltip topology-tooltip" hidden></div>
+            <p id="topology-unavailable" class="metric-note topology-fallback" hidden>3D view unavailable (WebGL or the Three.js library could not load). Closed-trade results are still shown in the sections below.</p>
+          </div>
+          <div class="topology-footnote"><span>X: evaluation quarter</span><span>Z: sector</span><span>Height &amp; color: net realized P&amp;L (green = profit, red = loss)</span></div>
+        </section>
+        <section class="performance-section">
+          <div class="section-heading"><div><h2>Cumulative realized P&amp;L</h2><p id="chart-description">Completed simulations, net of modeled costs</p></div><span class="chart-legend"><span></span>Realized P&amp;L</span></div>
+          <div class="chart-topline"><strong id="chart-total"></strong><span id="chart-count"></span></div>
+          <div class="main-chart-wrap"><canvas id="performance-chart" role="img" aria-label="Cumulative realized profit and loss"></canvas><div id="chart-tooltip" class="chart-tooltip" hidden></div></div>
+          <div class="chart-footnote"><span id="chart-start"></span><span id="chart-end"></span></div>
+        </section>
+        <div class="breakdown-grid">
+          <section class="monthly-section"><div class="section-heading"><div><h2>Monthly results</h2><p>Realized P&amp;L by closing month</p></div><span class="unit-label">USD</span></div><div id="monthly-bars" class="monthly-bars"></div></section>
+          <section class="statistics-section"><div class="section-heading"><div><h2>Behind the results</h2><p>Completed trade statistics</p></div></div><dl id="statistics" class="statistics"></dl></section>
+        </div>
+        <section class="tearsheet-section blueprint" id="tearsheet-section" aria-label="Quantitative tearsheet">
+          <i class="corner tl" aria-hidden="true"></i><i class="corner tr" aria-hidden="true"></i>
+          <div class="section-heading"><div><span class="eyebrow">Module 04</span><h2>Quantitative tearsheet</h2><p>Closed-trade risk metrics and the portfolio's structural exposure limits</p></div></div>
+          <dl class="tearsheet-grid" id="tearsheet"></dl>
+        </section>
+        <section class="recent-section"><div class="section-heading"><div><h2>Recently closed</h2><p>The latest completed simulations</p></div><a class="text-link" href="#trades">View all trades <span aria-hidden="true">&rarr;</span></a></div><div class="table-scroll"><table><thead><tr><th scope="col">Pair</th><th scope="col">Sector</th><th scope="col">Closed on</th><th scope="col">Holding time</th><th scope="col">Status</th><th scope="col" class="number">Net P&amp;L</th></tr></thead><tbody id="recent-trades"></tbody></table></div></section>
+      </section>
+      <section id="view-trades" aria-label="Closed trade history" hidden>
+        <div class="ledger-summary"><span><strong id="ledger-count"></strong> closed simulations</span><span>Net realized P&amp;L <strong id="ledger-pnl"></strong></span></div>
+        <div class="ledger-controls"><label class="search-field">Search pair<input id="pair-search" type="search" placeholder="e.g. AAPL" maxlength="50" autocomplete="off"></label><label>Outcome<select id="outcome-filter"><option value="all">All outcomes</option><option value="win">Profitable</option><option value="loss">Losing</option><option value="flat">Breakeven</option></select></label><label>Sort by<select id="sort-order"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="best">Highest P&amp;L</option><option value="worst">Lowest P&amp;L</option><option value="sector">Sector (A-Z)</option><option value="longest">Longest held</option><option value="shortest">Shortest held</option></select></label><button type="button" id="clear-filters" class="secondary-button">Reset filters</button></div>
+        <div class="table-scroll"><table class="ledger-table"><thead><tr><th scope="col">Pair</th><th scope="col">Sector</th><th scope="col">Opened on</th><th scope="col">Closed on</th><th scope="col">Holding time</th><th scope="col">Status</th><th scope="col" class="number">Net P&amp;L</th></tr></thead><tbody id="all-trades"></tbody></table></div>
+        <div class="empty-state" id="empty-trades" hidden><h2>No matching closed trades</h2><p>There are no completed simulations in this selection.</p><button type="button" id="empty-reset" class="secondary-button">Reset filters</button></div>
+        <div class="pagination"><span id="table-count" role="status" aria-live="polite"></span><div><button id="previous-page" type="button" class="secondary-button">Previous</button><span id="page-count"></span><button id="next-page" type="button" class="secondary-button">Next</button></div></div>
+      </section>
+      <section id="view-methodology" hidden aria-label="Simulation methodology">
+        <div class="method-intro"><span class="eyebrow">THE SCOPE OF THIS RECORD</span><h2>Completed simulations.<br>Clearly defined results.</h2><p>Alpha Quant is an experimental pairs-trading research project. This journal is designed to report completed simulated trades and their realized outcomes.</p><div class="method-demo"><strong id="method-data-title">Historical price simulation.</strong><p id="method-data-description">The data source and simulation assumptions accompany each generated results snapshot.</p></div></div>
+        <div class="method-details">
+          <article><span class="method-number">01</span><div><h3>What is included</h3><p>Only completed simulated trades with a verified closing timestamp and a numeric net profit or loss. The record includes both profitable and losing trades.</p></div></article>
+          <article><span class="method-number">02</span><div><h3>What remains private</h3><p>Open positions, current trade signals, entry thresholds, and active exposure are excluded from the public record.</p></div></article>
+          <article><span class="method-number">03</span><div><h3>How results are measured</h3><p>Net P&amp;L is the sum of completed trade outcomes after modeled transaction costs. Win rate is the share of completed trades with a positive result. Profit factor is total positive P&amp;L divided by the absolute total of negative P&amp;L; it is undefined when there are no losses.</p></div></article>
+          <article><span class="method-number">04</span><div><h3>Reading the chart</h3><p>The curve begins at zero and accumulates realized P&amp;L in closing order. Maximum realized drawdown is the largest drop from a previous peak, including the starting zero balance. This is not a mark-to-market equity curve and does not measure risk from open positions.</p></div></article>
+          <article><span class="method-number">05</span><div><h3>Periods and timestamps</h3><p>Reporting periods use closing dates and end at the snapshot timestamp, not the current date. Each selected period starts its own cumulative P&amp;L at zero. All dates are displayed in UTC. Holding time is elapsed calendar time between opening and closing.</p></div></article>
+          <article><span class="method-number">06</span><div><h3>Simulation assumptions</h3><p id="execution-assumptions">Simulated outcomes are not real investment returns. Actual execution quality and liquidity may differ.</p></div></article>
+          <article><span class="method-number">07</span><div><h3>Limits of the model</h3><p>Daily prices are adjusted for splits and dividends. P&amp;L uses synthetic adjusted shares, not broker fills or a full corporate-action ledger. Short availability, changing borrow rates, liquidity constraints, and margin calls are not modeled. Open positions are excluded and are not forcibly closed at the end of the test, so closed-only P&amp;L is not total portfolio performance.</p></div></article>
+        </div>
+      </section>
+    </div>
+    <noscript><div class="error-state"><h1>JavaScript is required</h1><p>Enable JavaScript to view the simulation results.</p></div></noscript>
+  </main>
+  <footer class="site-footer container"><div><span class="footer-brand">Alpha Quant</span><span>Independent quantitative research</span></div><p>Simulated results. No real capital. Not investment advice.</p><span class="footer-note">All timestamps UTC</span></footer>
+  <button type="button" class="corner-tab corner-tab-left" id="corner-filter">Filter Pairs <span aria-hidden="true">+</span></button>
+  <button type="button" class="corner-tab corner-tab-right" id="corner-tearsheet">Tearsheet View <span aria-hidden="true">+</span></button>
+</body>
+</html>
