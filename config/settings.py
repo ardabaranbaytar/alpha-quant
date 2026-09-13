@@ -36,6 +36,9 @@ class Settings:
     # same paper orders concurrently because no cross-process lease exists yet.
     WEB_CONCURRENCY = int(os.getenv("WEB_CONCURRENCY", "1"))
     SCAN_CACHE_TTL_SECONDS = float(os.getenv("SCAN_CACHE_TTL_SECONDS", "60"))
+    WORKER_CYCLE_SECONDS = int(os.getenv("WORKER_CYCLE_SECONDS", "180"))
+    if WORKER_CYCLE_SECONDS <= 0:
+        raise RuntimeError("WORKER_CYCLE_SECONDS must be a positive integer")
     # Daily bars can legitimately be several calendar days old over weekends,
     # holidays, and while an off-session backfill is still in progress.
     MAX_PRICE_AGE_DAYS: int = int(os.getenv("MAX_PRICE_AGE_DAYS", "14"))

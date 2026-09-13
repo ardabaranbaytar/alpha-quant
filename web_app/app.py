@@ -271,7 +271,7 @@ if os.path.exists(static_path):
 # ── Auth middleware — runs on every request ───────────────────────────────────
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
-    public = {"/login", "/favicon.ico"}
+    public = {"/login", "/favicon.ico", "/health"}
     if request.url.path in public or request.url.path.startswith("/static/"):
         return await call_next(request)
 
@@ -325,7 +325,7 @@ def _background_worker(application: FastAPI):
                 logger.info("[SCAN] Candidate %s | Z-score=%s", pair, z_score)
         except Exception as e:
             logger.error("Worker cycle error: %s", e)
-        application.state.worker_stop.wait(60)
+        application.state.worker_stop.wait(settings.WORKER_CYCLE_SECONDS)
 
 
 # ── Login / Logout ────────────────────────────────────────────────────────────
