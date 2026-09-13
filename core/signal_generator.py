@@ -95,14 +95,16 @@ class SignalGenerator:
         # completed intraday bar whenever it is newer than that symbol's final
         # daily close.  The window query returns at most one bar per symbol.
         intraday_query = text("""
-            SELECT date, symbol, price
-            FROM (
-                SELECT date, symbol, price,
-                       ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY date DESC) AS row_number
+            SELECT sp.date, sp.symbol, sp.price
+            FROM stock_prices sp
+            INNER JOIN (
+                SELECT symbol, MAX(date) AS max_date
                 FROM stock_prices
                 WHERE symbol IN :symbols
-            ) AS latest_bars
-            WHERE row_number = 1
+                GROUP BY symbol
+            ) latest
+              ON sp.symbol = latest.symbol
+             AND sp.date = latest.max_date
         """).bindparams(bindparam("symbols", expanding=True))
         try:
             with db.engine.connect() as conn:
