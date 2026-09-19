@@ -1,7 +1,9 @@
 # run_bot.py
 
 import logging
+
 import uvicorn
+
 from config.logging_config import setup_logging
 
 setup_logging()

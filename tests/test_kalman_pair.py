@@ -1,12 +1,18 @@
-from dataclasses import replace
 import unittest
+from dataclasses import replace
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 
 from research.run_backtest import ExecutionConfig, execution_time, simulate_pair
-from strategies.kalman_pair import KalmanObservation, KalmanPairConfig, KalmanPairStrategy, OUModel, fit_ou
+from strategies.kalman_pair import (
+    KalmanObservation,
+    KalmanPairConfig,
+    KalmanPairStrategy,
+    OUModel,
+    fit_ou,
+)
 
 
 def synthetic_pair(count=240):

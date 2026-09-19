@@ -1,6 +1,8 @@
 import logging
+
 import pandas as pd
 from sqlalchemy import text
+
 from config.database import db
 
 logger = logging.getLogger(__name__)
@@ -31,7 +33,7 @@ class PerformanceAnalytics:
                 df['entry_time'] = pd.to_datetime(df['entry_time'])
                 df['exit_time'] = pd.to_datetime(df['exit_time'])
             return df
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error("Failed to read position history: %s", e)
             return pd.DataFrame()
 
@@ -96,7 +98,7 @@ class PerformanceAnalytics:
                 report_df = pd.DataFrame(list(report.items()), columns=['Metric', 'Value'])
                 report_df.to_csv("logs/performance_report.csv", index=False, encoding='utf-8')
                 logger.info("Performance report saved to logs/performance_report.csv")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.warning("Could not save CSV report: %s", e)
 
         return report

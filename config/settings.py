@@ -1,4 +1,6 @@
 import os
+from typing import ClassVar
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,8 +20,6 @@ def _environment_bool(name: str, default: bool) -> bool:
 
 
 class Settings:
-    ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
-
     # Database
     DB_DIALECT = os.getenv("DB_DIALECT", "mysql")
     DB_DRIVER = os.getenv("DB_DRIVER", "pymysql")
@@ -43,15 +43,9 @@ class Settings:
     # holidays, and while an off-session backfill is still in progress.
     MAX_PRICE_AGE_DAYS: int = int(os.getenv("MAX_PRICE_AGE_DAYS", "14"))
 
-    # Legacy dashboard scanner thresholds.  This scanner is read-only and is
-    # deliberately independent from the execution engine's Kalman entry gate.
-    WINDOW = int(os.getenv("WINDOW", "60"))
-    Z_ENTRY = float(os.getenv("Z_ENTRY", "2.0"))
-    Z_STOP = float(os.getenv("Z_STOP", "3.5"))
     # The desk uses the same institutional entry threshold as the canonical
     # signal model; this remains display-only and does not alter execution.
     DASHBOARD_Z_THRESHOLD = float(os.getenv("DASHBOARD_Z_THRESHOLD", "2.0"))
-    DASHBOARD_COINT_PVALUE_THRESHOLD = float(os.getenv("DASHBOARD_COINT_PVALUE_THRESHOLD", "0.05"))
     DASHBOARD_MAX_CANDIDATES = int(os.getenv("DASHBOARD_MAX_CANDIDATES", "5"))
 
     # Hermes never attempts localhost model calls unless this is explicitly on.
@@ -73,7 +67,7 @@ class Settings:
     # possible only through an explicit, valid configuration override.
     SESSION_COOKIE_SECURE = _environment_bool("SESSION_COOKIE_SECURE", default=True)
 
-    ALLOWED_ORIGINS = [
+    ALLOWED_ORIGINS: ClassVar[list[str]] = [
         origin.strip()
         for origin in os.getenv(
             "ALLOWED_ORIGINS",

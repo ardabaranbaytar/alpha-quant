@@ -26,7 +26,6 @@ from hermes.audit_ledger import AuditLedger
 from hermes.auditor_hook import HermesAuditorHook
 from hermes.models import AuditEventKind
 
-
 TEST_PAIR = "TEST_AAA / TEST_BBB"
 TEST_LABEL = "TEST_AAA-TEST_BBB"
 GREEN, RED, AMBER, RESET = "\033[92m", "\033[91m", "\033[93m", "\033[0m"
@@ -146,7 +145,7 @@ def main() -> int:
             results.append(report(5, "Close cycle & PnL", close_ok,
                                   "two CLOSED legs with recorded PnL" if close_ok else "close verification failed"))
             return 0 if all(results) else 1
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001
         while len(results) < 5:
             results.append(report(len(results) + 1, "Pipeline verification", False, str(error)))
         return 1
@@ -156,7 +155,7 @@ def main() -> int:
         try:
             cleanup()
             report(6, "Cleanup", True, f"removed synthetic {TEST_LABEL} records")
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             report(6, "Cleanup", False, str(error))
 
 

@@ -1,15 +1,23 @@
+import unittest
 from dataclasses import replace
 from itertools import combinations
-import unittest
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 
 from research.pair_screener import (
-    SECTOR_UNIVERSE, ScreenerConfig, ScreenedPair, ScreeningResult,
-    WalkForwardRebalance, WalkForwardResult, screen_pairs, symbol_sectors, universe_symbols, walk_forward_screen,
+    SECTOR_UNIVERSE,
+    ScreenedPair,
+    ScreenerConfig,
+    ScreeningResult,
+    WalkForwardRebalance,
+    WalkForwardResult,
     download_research_history,
+    screen_pairs,
+    symbol_sectors,
+    universe_symbols,
+    walk_forward_screen,
 )
 from research.run_backtest import execution_time, simulate_pair
 from strategies.kalman_pair import OUModel
@@ -55,9 +63,9 @@ class PairScreenerTests(unittest.TestCase):
                 raise RuntimeError("No Yahoo Finance history returned for BBB")
             return {"AAA": bars}
 
-        with patch("research.pair_screener.DataFetcher.download_daily_history", side_effect=download):
-            with self.assertLogs("research.pair_screener", level="WARNING") as logs:
-                result = download_research_history(["AAA", "BBB"], "2021-01-01", "2026-09-09", None)
+        with patch("research.pair_screener.DataFetcher.download_daily_history", side_effect=download), \
+                self.assertLogs("research.pair_screener", level="WARNING") as logs:
+            result = download_research_history(["AAA", "BBB"], "2021-01-01", "2026-09-09", None)
 
         self.assertEqual(set(result), {"AAA"})
         self.assertIs(result["AAA"], bars)

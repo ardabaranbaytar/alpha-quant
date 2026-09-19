@@ -4,15 +4,14 @@ This module deliberately receives only audit scalars.  It has no configuration
 or environment dependency and cannot expose trading credentials to the model.
 """
 
-from enum import Enum
 import json
 import logging
 import re
 import threading
 import time
+from enum import Enum
 
 import requests
-
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +101,7 @@ class OllamaClient:
             if not isinstance(response_text, str) or not response_text.strip():
                 self._fail()
                 return None
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             logger.warning("%s: %s - %s", error_label, type(exc).__name__, str(exc))
             self._fail()
             return None

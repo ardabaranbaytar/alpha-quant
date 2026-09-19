@@ -213,7 +213,7 @@ class PairsBacktester:
                 log_b,
             )
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
 
         # -----------------------------------------------------
@@ -232,7 +232,7 @@ class PairsBacktester:
                 x,
             ).fit()
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
 
         alpha = float(
@@ -269,7 +269,7 @@ class PairsBacktester:
                 )[1]
             )
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
 
         spread_mean = float(
@@ -349,10 +349,7 @@ class PairsBacktester:
         ):
             return False
 
-        if model["beta"] <= 0:
-            return False
-
-        return True
+        return not model["beta"] <= 0
 
     # =========================================================
     # HALF-LIFE
@@ -399,7 +396,7 @@ class PairsBacktester:
                 model.params["lagged"]
             )
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return float("inf")
 
         if beta >= 0:

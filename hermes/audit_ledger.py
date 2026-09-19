@@ -8,11 +8,14 @@ from datetime import datetime, timezone
 from hermes.models import AuditEvent, AuditEventKind
 
 
-DEFAULT_LEDGER_PATH = os.environ.get(
-    "HERMES_LEDGER_PATH",
-    os.path.expandvars(r"%LOCALAPPDATA%\AlphaQuantBot\hermes_audit.db" if os.name == "nt"
-                       else "/tmp/alpha_quant_hermes/hermes_audit.db"),
-)
+def _default_ledger_path() -> str:
+    if os.name == "nt":
+        return os.path.expandvars(r"%LOCALAPPDATA%\AlphaQuantBot\hermes_audit.db")
+    data_home = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
+    return os.path.join(data_home, "alpha_quant_bot", "hermes_audit.db")
+
+
+DEFAULT_LEDGER_PATH = os.environ.get("HERMES_LEDGER_PATH", _default_ledger_path())
 
 
 def _epoch_ms(timestamp_iso: str) -> int:

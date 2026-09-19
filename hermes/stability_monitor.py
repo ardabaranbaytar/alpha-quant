@@ -15,8 +15,10 @@ def _rejected(pair: str, observations: int, reason: str) -> StabilityReport:
 
 
 def analyze_pair_stability(pair: str, prices_a: pd.Series, prices_b: pd.Series,
-                           config: StabilityConfig = StabilityConfig()) -> StabilityReport:
+                           config: StabilityConfig | None = None) -> StabilityReport:
     """Analyze aligned price levels without DB, network, filesystem, or mutation."""
+    if config is None:
+        config = StabilityConfig()
     if not isinstance(pair, str) or not pair:
         raise ValueError("pair must be a nonempty string")
     if not isinstance(prices_a, pd.Series) or not isinstance(prices_b, pd.Series):
@@ -40,7 +42,7 @@ def analyze_pair_stability(pair: str, prices_a: pd.Series, prices_b: pd.Series,
         adf_pvalue = float(adfuller(spread, autolag="AIC")[1])
         ou = fit_ou(spread.to_numpy(), decay=1, min_observations=config.min_observations)
         hurst = estimate_hurst(spread.to_numpy())
-    except Exception:
+    except Exception:  # noqa: BLE001
         return _rejected(pair, observations, "ANALYSIS_ERROR")
 
     reasons = []

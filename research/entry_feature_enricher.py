@@ -1,10 +1,13 @@
+import logging
+
 import numpy as np
 import pandas as pd
-
 from statsmodels.api import OLS, add_constant
 from statsmodels.tsa.stattools import adfuller, coint
 
 from config.database import db
+
+logger = logging.getLogger(__name__)
 
 
 class EntryFeatureEnricher:
@@ -325,7 +328,7 @@ class EntryFeatureEnricher:
             )
 
         except Exception:
-            pass
+            logger.debug("Entry feature enrichment failed", exc_info=True)
 
         return result
 
@@ -478,7 +481,7 @@ class EntryFeatureEnricher:
                 model.params.iloc[1]
             )
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return np.nan
 
     def _calculate_beta_drift(
@@ -661,7 +664,7 @@ class EntryFeatureEnricher:
                     )
                 )
 
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 if debug:
                     print(
                         f"[{number}/{total}] "

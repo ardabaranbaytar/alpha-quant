@@ -1,7 +1,7 @@
-from copy import deepcopy
-from pathlib import Path
 import tempfile
 import unittest
+from copy import deepcopy
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
@@ -31,9 +31,9 @@ class PairArtifactTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     load_history(directory, symbols, start, end)
             # Simulate corruption without modifying the user's real artifacts.
-            with patch.object(Path, "read_bytes", return_value=b"corrupted"):
-                with self.assertRaisesRegex(ValueError, "hash mismatch"):
-                    load_history(directory, ["AAA"], "2025-01-01", "2025-02-01")
+            with patch.object(Path, "read_bytes", return_value=b"corrupted"), \
+                    self.assertRaisesRegex(ValueError, "hash mismatch"):
+                load_history(directory, ["AAA"], "2025-01-01", "2025-02-01")
 
     def test_hash_valid_but_invalid_prices_are_not_accepted(self):
         for invalid in ("nan", "negative", "outside", "duplicate"):

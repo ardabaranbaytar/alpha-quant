@@ -10,9 +10,9 @@ import hashlib
 import itertools
 import json
 import logging
-from pathlib import Path
 import sqlite3
 from collections import deque
+from pathlib import Path
 from threading import Lock
 
 import numpy as np
@@ -30,8 +30,8 @@ from execution.position_ledger import insert_open_position_legs
 from execution.telemetry import NullTelemetryHook, TelemetryHook
 from research.pair_accounting import liquidation_pnl
 from research.run_backtest import ExecutionConfig
-from strategies.pair_trading import PairTradingStrategy
 from strategies.kalman_pair import KalmanPairStrategy, fit_ou
+from strategies.pair_trading import PairTradingStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class ExecutionEngine:
     MIN_PRICE_SERIES_BARS = 20
 
     def __init__(self, portfolio_equity: float = 100000.0, strategy=None, costs=None, order_manager=None,
-                 telemetry: TelemetryHook = NullTelemetryHook(), hermes_ledger_path=None):
+                 telemetry: TelemetryHook | None = None, hermes_ledger_path=None):
         if not np.isfinite(portfolio_equity) or portfolio_equity <= 0:
             raise ValueError("portfolio_equity must be finite and positive")
         self.portfolio_equity = float(portfolio_equity)
@@ -57,8 +57,8 @@ class ExecutionEngine:
         # Pipeline A's documented defaults: 10 bps commission, 5 bps slippage,
         # and 3% annual short borrow. liquidation_pnl owns their application.
         self.costs = costs or ExecutionConfig()
-        self.telemetry = telemetry
-        self.order_manager = order_manager or OrderManager(OrderBookSimulator(self.costs), telemetry=telemetry)
+        self.telemetry = telemetry if telemetry is not None else NullTelemetryHook()
+        self.order_manager = order_manager or OrderManager(OrderBookSimulator(self.costs), telemetry=self.telemetry)
         self.hermes_ledger_path = hermes_ledger_path
         self._gatekeeper_rejections = deque(maxlen=25)
         self._gatekeeper_rejections_lock = Lock()
@@ -184,7 +184,7 @@ class ExecutionEngine:
         Positions are persisted one leg per row, so actual signed quantities are
         retained rather than being reconstructed from a notional guess.
         """
-        direction = self._direction(record["action"])
+        self._direction(record["action"])  # validates the action is a recognized position type
         prices = np.asarray([record["price_a_entry"], record["price_b_entry"]], dtype=float)
         if not np.isfinite(prices).all() or (prices <= 0).any():
             raise ValueError("Position entry prices must be finite and positive")
@@ -540,7 +540,7 @@ class ExecutionEngine:
         the worker cycle can compute it once and share it with the desk scan
         that follows, rather than each running an identical DB query+pivot.
         """
-        logger.info("Execution cycle triggered at %s", datetime.datetime.now().strftime("%H:%M:%S"))
+        logger.info("Execution cycle triggered at %s", datetime.datetime.now(datetime.UTC).strftime("%H:%M:%S"))
         price_matrix = signals_hub._build_price_matrix() if price_matrix is None else price_matrix
         open_positions = self._get_open_positions()
         if price_matrix.empty:
@@ -594,9 +594,9 @@ class ExecutionEngine:
             direction = self._direction(record["action"])
             stop_loss = self._net_pnl(record, prices, datetime.datetime.now(datetime.UTC)) <= -self.portfolio_equity * RiskConfig.MAX_RISK_PER_TRADE
             mean_reverted = z_score is not None and self.strategy.should_close(direction, z_score)
-            if stop_loss or mean_reverted:
-                if self._close_position(record, prices, "risk stop" if stop_loss else "mean reversion"):
-                    open_positions.pop(pair)
+            if (stop_loss or mean_reverted) and self._close_position(
+                    record, prices, "risk stop" if stop_loss else "mean reversion"):
+                open_positions.pop(pair)
 
         for opportunity in opportunities:
             pair = opportunity["pair"]

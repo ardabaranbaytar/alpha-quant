@@ -209,7 +209,7 @@ class BatchPairsBacktester:
                         f"{pair_elapsed:.1f}s"
                     )
 
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 errors.append(
                     {
                         "pair":

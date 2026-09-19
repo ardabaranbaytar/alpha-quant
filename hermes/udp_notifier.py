@@ -1,9 +1,12 @@
 """Best-effort nonblocking loopback UDP wake-up notifications."""
 
 import json
+import logging
 import socket
 
 from hermes.models import AuditEvent
+
+logger = logging.getLogger(__name__)
 
 
 class UdpNotifier:
@@ -23,14 +26,14 @@ class UdpNotifier:
         except Exception:
             # UDP is an optional wake-up signal; Windows loopback may reset an
             # unconnected socket when there is no listener.
-            pass
+            logger.debug("Hermes UDP notify failed", exc_info=True)
 
     def close(self) -> None:
         if self._socket is not None:
             try:
                 self._socket.close()
             except Exception:
-                pass
+                logger.debug("Hermes UDP socket close failed", exc_info=True)
             self._socket = None
 
     def __enter__(self):

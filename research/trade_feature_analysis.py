@@ -1,9 +1,11 @@
+from typing import ClassVar
+
 import numpy as np
 import pandas as pd
 
 
 class TradeFeatureAnalyzer:
-    ENTRY_FEATURES = [
+    ENTRY_FEATURES: ClassVar[list[str]] = [
         "entry_abs_z",
         "stability_pct",
         "beta",

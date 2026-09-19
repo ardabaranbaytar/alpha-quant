@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 def hourly_price_task():
-    logger.info("Hourly bar update triggered at %s", datetime.datetime.now())
+    logger.info("Hourly bar update triggered at %s", datetime.datetime.now(datetime.UTC))
     fetcher.inject_hourly_bars(period="3d")
 
 
 def daily_price_task() -> bool:
     """Refresh recent daily closes without allowing provider failures to escape."""
-    logger.info("Daily bar update triggered at %s", datetime.datetime.now())
+    logger.info("Daily bar update triggered at %s", datetime.datetime.now(datetime.UTC))
     try:
         # A short overlap captures delayed corrected closes while avoiding a
         # full-history download in the production worker every trading day.

@@ -6,7 +6,16 @@ import numpy as np
 import pandas as pd
 
 from data_pipeline.yfinance_fetcher import DataFetcher
-from research.run_backtest import DEFAULT_PAIRS, ROOT, ExecutionConfig, RiskConfig, execution_time, main, publish_snapshot, simulate_pair
+from research.run_backtest import (
+    DEFAULT_PAIRS,
+    ROOT,
+    ExecutionConfig,
+    RiskConfig,
+    execution_time,
+    main,
+    publish_snapshot,
+    simulate_pair,
+)
 from strategies.pair_trading import PairTradingConfig, PairTradingStrategy, SpreadModel
 
 
@@ -36,9 +45,9 @@ class PairBacktestTests(unittest.TestCase):
     def test_legacy_manual_universe_and_new_default_download_window(self):
         self.assertEqual(set(DEFAULT_PAIRS), {"AAPL/MSFT", "XOM/CVX", "JPM/BAC", "V/MA", "GOOGL/META", "KO/PEP", "NVDA/AMD"})
         self.assertEqual(len(DEFAULT_PAIRS), 7)
-        with patch("research.run_backtest.download_universe", side_effect=RuntimeError("stop before network")) as download:
-            with self.assertRaisesRegex(RuntimeError, "stop before network"):
-                main(["--end", "2026-01-01"])
+        with patch("research.run_backtest.download_universe", side_effect=RuntimeError("stop before network")) as download, \
+                self.assertRaisesRegex(RuntimeError, "stop before network"):
+            main(["--end", "2026-01-01"])
         self.assertEqual(download.call_args.args[:2], ("2021-01-01", "2026-01-01"))
         with patch("research.run_backtest.download_universe") as automatic, patch.object(DataFetcher, "download_daily_history", side_effect=RuntimeError("manual download")) as manual:
             with self.assertRaisesRegex(RuntimeError, "No Yahoo Finance history returned"):
@@ -176,16 +185,16 @@ class PairBacktestTests(unittest.TestCase):
         self.assertEqual(execution_time("2026-07-06"), "2026-07-06T13:30:00Z")
 
     def test_downloader_aligns_actual_data_without_filling_missing_sessions(self):
-        from pathlib import Path
         import tempfile
+        from pathlib import Path
         raw = pd.DataFrame({"Open": [100, np.nan, 103], "Close": [101, np.nan, 104]}, index=pd.date_range("2026-01-05", periods=3))
-        with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[1] / "tests") as folder:
-            with patch("data_pipeline.yfinance_fetcher.yf.download", return_value=raw) as download, patch("data_pipeline.yfinance_fetcher.yf.set_tz_cache_location"):
-                result = DataFetcher().download_daily_history(["AAPL"], "2026-01-05", "2026-01-08", Path(folder))
-                self.assertEqual(len(result["AAPL"]), 2)
-                self.assertTrue(download.call_args.kwargs["auto_adjust"])
-                self.assertFalse(download.call_args.kwargs["threads"])
-                self.assertEqual(download.call_args.kwargs["timeout"], DataFetcher.DAILY_HISTORY_TIMEOUT_SECONDS)
+        with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[1] / "tests") as folder, \
+                patch("data_pipeline.yfinance_fetcher.yf.download", return_value=raw) as download, patch("data_pipeline.yfinance_fetcher.yf.set_tz_cache_location"):
+            result = DataFetcher().download_daily_history(["AAPL"], "2026-01-05", "2026-01-08", Path(folder))
+            self.assertEqual(len(result["AAPL"]), 2)
+            self.assertTrue(download.call_args.kwargs["auto_adjust"])
+            self.assertFalse(download.call_args.kwargs["threads"])
+            self.assertEqual(download.call_args.kwargs["timeout"], DataFetcher.DAILY_HISTORY_TIMEOUT_SECONDS)
 
 
 if __name__ == "__main__":

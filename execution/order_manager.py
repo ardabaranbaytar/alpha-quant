@@ -1,10 +1,11 @@
 """Pair-order lifecycle coordination with hedge-preserving fills."""
 
-from dataclasses import asdict, is_dataclass, replace
-from enum import Enum
 import hashlib
 import json
+import logging
 import uuid
+from dataclasses import asdict, is_dataclass, replace
+from enum import Enum
 
 import pandas as pd
 
@@ -13,12 +14,14 @@ from execution.order_ledger import OrderLedger
 from execution.order_models import FillResult, MarketSnapshot, Order, OrderStatus
 from execution.telemetry import NullTelemetryHook, TelemetryHook
 
+logger = logging.getLogger(__name__)
+
 
 class OrderManager:
-    def __init__(self, simulator: OrderBookSimulator, telemetry: TelemetryHook = NullTelemetryHook(),
+    def __init__(self, simulator: OrderBookSimulator, telemetry: TelemetryHook | None = None,
                  order_ledger: OrderLedger | None = None):
         self.simulator = simulator
-        self.telemetry = telemetry
+        self.telemetry = telemetry if telemetry is not None else NullTelemetryHook()
         self.order_ledger = order_ledger or OrderLedger()
 
     @staticmethod
@@ -43,7 +46,7 @@ class OrderManager:
         try:
             self.telemetry.emit(self._json_safe(event))
         except Exception:
-            pass
+            logger.debug("Telemetry emit failed", exc_info=True)
 
     def _persist_order_transitions(self, orders: list[Order] | tuple[Order, ...], statuses,
                                    reasons: str | list[str] | tuple[str, ...] = "") -> None:
@@ -76,7 +79,7 @@ class OrderManager:
         except Exception:
             # Custom audit ledger implementations receive the same isolation
             # guarantee as the built-in database ledger.
-            pass
+            logger.debug("Order ledger record_transitions failed", exc_info=True)
 
     def record_pre_trade_rejection(self, pair: str, symbols: tuple[str, str], action: str,
                                    requested_at: pd.Timestamp, reason: str) -> None:
@@ -99,7 +102,7 @@ class OrderManager:
         try:
             self.order_ledger.record_transitions(transitions)
         except Exception:
-            pass
+            logger.debug("Order ledger record_transitions failed", exc_info=True)
 
     def _terminal_event_id(self, pair: str, status: OrderStatus, legs: list[FillResult], reason: str) -> str:
         """Create a stable source id before asynchronous audit delivery.

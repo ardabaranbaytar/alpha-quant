@@ -2,11 +2,16 @@ import unittest
 
 import numpy as np
 import pandas as pd
+from test_pair_portfolio import portfolio_history, run_portfolio
 
-from research.pair_accounting import cash_interest, close_time, execution_time, portfolio_metrics
+from research.pair_accounting import (
+    cash_interest,
+    close_time,
+    execution_time,
+    portfolio_metrics,
+)
 from research.portfolio import PortfolioConfig
 from research.run_backtest import ExecutionConfig, RiskConfig
-from test_pair_portfolio import portfolio_history, run_portfolio
 
 
 class PairCashYieldTests(unittest.TestCase):

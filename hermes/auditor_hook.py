@@ -57,7 +57,7 @@ class HermesAuditorHook(TelemetryHook):
                 self._conversion_error_count += 1
             else:
                 self._write_error_count += 1
-        logger.warning("Hermes audit %s failed: %s", kind, exc, exc_info=True)
+        logger.warning("Hermes audit %s failed: %s", kind, exc, exc_info=exc)
 
     def emit(self, event: dict) -> None:
         try:
@@ -117,19 +117,19 @@ class HermesAuditorHook(TelemetryHook):
                         continue
                     try:
                         audit_event = self._to_audit_event(event)
-                    except Exception as exc:
+                    except Exception as exc:  # noqa: BLE001
                         self._record_error("conversion", exc)
                         continue
                     try:
                         appended = ledger.append(audit_event)
-                    except Exception as exc:
+                    except Exception as exc:  # noqa: BLE001
                         self._record_error("write", exc)
                         continue
                     if appended:
                         try:
                             self._notifier.notify(audit_event)
                         except Exception:
-                            pass
+                            logger.debug("Hermes notifier failed", exc_info=True)
         finally:
             self._notifier.close()
 

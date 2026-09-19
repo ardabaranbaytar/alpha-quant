@@ -5,7 +5,7 @@ scripts/dry_run_nvda_amd.py) all open a filled pair order and then need to
 persist the same two OPEN rows the same way; this keeps that insert in one
 place instead of three.
 """
-from typing import Iterable
+from collections.abc import Iterable
 
 from sqlalchemy import text
 

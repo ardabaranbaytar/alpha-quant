@@ -1,7 +1,7 @@
 """Database-free Engle-Granger strategy on synchronized price-level series."""
 
-from dataclasses import dataclass
 import warnings
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd

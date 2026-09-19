@@ -1,6 +1,6 @@
 # config/database.py
 
-from sqlalchemy import create_engine, text, URL
+from sqlalchemy import URL, create_engine, text
 
 from .settings import settings
 
@@ -23,7 +23,7 @@ class DatabaseManager:
             pool_pre_ping=True,
         )
 
-    def execute_query(self, query_str: str, params: dict = None):
+    def execute_query(self, query_str: str, params: dict | None = None):
         """Executes a SQL query and returns all rows."""
         with self.engine.connect() as conn:
             result = conn.execute(text(query_str), params or {})

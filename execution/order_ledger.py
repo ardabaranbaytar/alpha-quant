@@ -1,7 +1,7 @@
 """Best-effort persistent audit trail for simulated order lifecycle transitions."""
 
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 
 import pandas as pd
 from sqlalchemy import text

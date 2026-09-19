@@ -3,7 +3,7 @@ import itertools
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from sqlalchemy import text
+from sqlalchemy import bindparam, text
 from statsmodels.tsa.stattools import adfuller, coint
 
 from config.database import db
@@ -46,33 +46,23 @@ class PairStabilityAnalyzer:
         with a single database query.
         """
 
-        placeholders = ", ".join(
-            f":symbol_{i}"
-            for i in range(len(symbols))
-        )
-
         query = text(
-            f"""
+            """
             SELECT
                 date,
                 symbol,
                 close
             FROM stock_prices_daily
-            WHERE symbol IN ({placeholders})
+            WHERE symbol IN :symbols
             ORDER BY date
             """
-        )
-
-        params = {
-            f"symbol_{i}": symbol
-            for i, symbol in enumerate(symbols)
-        }
+        ).bindparams(bindparam("symbols", expanding=True))
 
         with db.engine.connect() as conn:
             df = pd.read_sql(
                 query,
                 conn,
-                params=params,
+                params={"symbols": symbols},
             )
 
         if df.empty:
@@ -141,7 +131,7 @@ class PairStabilityAnalyzer:
                 model.params["lagged"]
             )
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return float("inf")
 
         if beta >= 0:
@@ -199,7 +189,7 @@ class PairStabilityAnalyzer:
                 log_b,
             )
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
 
         # -----------------------------------------------------
@@ -216,7 +206,7 @@ class PairStabilityAnalyzer:
                 x,
             ).fit()
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
 
         beta = float(
@@ -248,7 +238,7 @@ class PairStabilityAnalyzer:
                 )[1]
             )
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
 
         half_life = (

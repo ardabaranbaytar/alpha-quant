@@ -12,18 +12,17 @@ from hermes.audit_ledger import DEFAULT_LEDGER_PATH, AuditLedger, _epoch_ms
 from hermes.models import AuditEvent, AuditEventKind, StabilityConfig
 from hermes.stability_monitor import analyze_pair_stability
 
-
 logger = logging.getLogger(__name__)
 
 
 class HermesService:
     def __init__(self, udp_port=9876, poll_interval_s=300, ledger_path=None, price_reader=None,
-                 stability_config=StabilityConfig(), ollama_client=None, portfolio_reader=None):
+                 stability_config=None, ollama_client=None, portfolio_reader=None):
         self.udp_port = int(udp_port)
         self.poll_interval_s = float(poll_interval_s)
         self.ledger_path = ledger_path or DEFAULT_LEDGER_PATH
         self.price_reader = price_reader
-        self.stability_config = stability_config
+        self.stability_config = stability_config if stability_config is not None else StabilityConfig()
         self.ollama_client = ollama_client
         # The web layer injects this read-only adapter; Hermes never imports the
         # execution or database layers to build a desk briefing.
@@ -59,7 +58,7 @@ class HermesService:
             if Path(self.ledger_path).exists():
                 with AuditLedger(self.ledger_path) as ledger:
                     events = ledger.iter_since(cutoff.isoformat().replace("+00:00", "Z"))
-        except Exception:
+        except Exception:  # noqa: BLE001
             events = []
 
         rejection_reasons = {}
@@ -82,7 +81,7 @@ class HermesService:
                 candidate = self.portfolio_reader()
                 if isinstance(candidate, dict):
                     portfolio.update(candidate)
-        except Exception:
+        except Exception:  # noqa: BLE001
             # A desk briefing must remain available even when the live SQL
             # reader is temporarily unavailable.
             portfolio["data_available"] = False
@@ -104,7 +103,7 @@ class HermesService:
                     "Desk briefing skipped because client unavailable: "
                     "Ollama client is disabled or not configured"
                 )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             logger.warning("Ollama desk briefing error: %s - %s", type(exc).__name__, str(exc))
             briefing = None
         if not briefing:
@@ -136,9 +135,9 @@ class HermesService:
             try:
                 self._listener_socket.recvfrom(2048)
                 self._scan_event.set()
-            except socket.timeout:
+            except TimeoutError:
                 continue
-            except Exception:
+            except Exception:  # noqa: BLE001
                 if not self._stop_event.is_set():
                     continue
 
@@ -151,9 +150,9 @@ class HermesService:
                     try:
                         self._scan(ledger)
                     except Exception:
-                        pass
+                        logger.debug("Hermes scan failed", exc_info=True)
         except Exception:
-            pass
+            logger.debug("Hermes service loop terminated", exc_info=True)
 
     def _scan(self, ledger: AuditLedger) -> None:
         events = ledger.iter_after(self._last_epoch_ms, self._last_event_id)
@@ -204,6 +203,7 @@ class HermesService:
                             diagnosis_payload,
                         ))
             except Exception:
+                logger.debug("Hermes pair diagnosis failed", exc_info=True)
                 continue
         self._last_epoch_ms, self._last_event_id = cursor
 
@@ -214,7 +214,7 @@ class HermesService:
             try:
                 self._listener_socket.close()
             except Exception:
-                pass
+                logger.debug("Hermes listener socket close failed", exc_info=True)
             self._listener_socket = None
         for thread in (self._listener_thread, self._worker_thread):
             if thread is not None:

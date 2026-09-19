@@ -1,11 +1,11 @@
 """Bulk-load research daily CSV snapshots into ``stock_prices_daily``."""
 
 import argparse
-from itertools import islice
 import logging
-from pathlib import Path
 import re
 import sys
+from itertools import islice
+from pathlib import Path
 
 import numpy as np
 import pandas as pd

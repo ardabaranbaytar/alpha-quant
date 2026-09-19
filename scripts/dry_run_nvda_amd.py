@@ -6,8 +6,8 @@ simulated market orders and writes the resulting filled legs to the SQL ledger.
 
 import argparse
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd

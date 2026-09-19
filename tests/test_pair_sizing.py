@@ -5,10 +5,19 @@ import numpy as np
 import pandas as pd
 
 from research.run_backtest import (
-    ExecutionConfig, RiskConfig, VolatilitySizingConfig, execution_time,
-    liquidation_pnl, main, simulate_pair,
+    ExecutionConfig,
+    RiskConfig,
+    VolatilitySizingConfig,
+    execution_time,
+    liquidation_pnl,
+    main,
+    simulate_pair,
 )
-from strategies.kalman_pair import KalmanObservation, KalmanPairConfig, KalmanPairStrategy
+from strategies.kalman_pair import (
+    KalmanObservation,
+    KalmanPairConfig,
+    KalmanPairStrategy,
+)
 from strategies.mean_reversion import EntryFilterConfig
 from strategies.pair_trading import PairTradingConfig, PairTradingStrategy, SpreadModel
 
@@ -133,7 +142,7 @@ class InverseVolatilitySizingTests(unittest.TestCase):
         self.assertIs(estimated_position, actual_position)
 
     def test_kalman_volatility_uses_only_previous_innovations_and_dollar_scale(self):
-        history, dates = sizing_history(count=125, signal_index=120)
+        history, _dates = sizing_history(count=125, signal_index=120)
         strategy = KalmanPairStrategy(KalmanPairConfig())
         observations = [KalmanObservation(0, 1, 0.01 * np.sin(i), None, None, False) for i in range(125)]
         observations[120] = KalmanObservation(0, 1, 999, 3, 5, True)

@@ -11,6 +11,7 @@ from config.database import db
 from config.settings import settings
 from research.pair_screener import ScreenerConfig, screen_pairs, universe_symbols
 from strategies.pair_trading import PairTradingConfig, PairTradingStrategy
+
 from .health_score import scorer
 
 logger = logging.getLogger(__name__)

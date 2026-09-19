@@ -6,7 +6,13 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from research.pair_accounting import cash_interest, close_time, execution_time, liquidation_pnl, portfolio_metrics
+from research.pair_accounting import (
+    cash_interest,
+    close_time,
+    execution_time,
+    liquidation_pnl,
+    portfolio_metrics,
+)
 from strategies.kalman_pair import KalmanPairStrategy
 from strategies.mean_reversion import estimate_hurst
 
@@ -277,7 +283,7 @@ class PortfolioEngine:
                 if session in self.contexts[pair].locations:
                     self._close(pair, opening)
                     self.pending_exits.remove(pair)
-            for pair, order in sorted(list(self.pending_entries.items()), key=lambda item: (item[1]["signal_session"], item[0])):
+            for pair, order in sorted(self.pending_entries.items(), key=lambda item: (item[1]["signal_session"], item[0])):
                 if not self.contexts[pair].allows(session):
                     self._reject(pair, opening, "inactive")
                     del self.pending_entries[pair]

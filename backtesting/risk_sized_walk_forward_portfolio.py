@@ -1312,10 +1312,6 @@ class RiskSizedWalkForwardPortfolioBacktester:
         debug: bool = True,
     ) -> dict:
 
-        start = pd.Timestamp(
-            start_date
-        )
-
         end = pd.Timestamp(
             end_date
         )

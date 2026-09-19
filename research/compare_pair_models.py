@@ -5,7 +5,6 @@ import math
 
 from research.run_backtest import ROOT, publish_snapshot
 
-
 SELECTION_RULE = "Higher finite daily excess-return Sharpe; then lower portfolio drawdown; then OLS. Undefined Sharpe ranks last. Retrospective research selection, not held-out validation."
 
 

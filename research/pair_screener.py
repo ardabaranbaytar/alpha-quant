@@ -1,9 +1,9 @@
 """Rank same-sector pairs on an explicitly bounded historical training interval."""
 
+import logging
 from collections import Counter
 from dataclasses import asdict, dataclass
 from itertools import combinations
-import logging
 from pathlib import Path
 
 import pandas as pd

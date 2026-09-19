@@ -1,5 +1,5 @@
-from dataclasses import replace
 import unittest
+from dataclasses import replace
 from unittest.mock import patch
 
 import numpy as np
@@ -7,9 +7,15 @@ import pandas as pd
 
 from research.pair_accounting import close_time, execution_time
 from research.portfolio import PortfolioConfig, PortfolioEngine
-from research.run_backtest import ExecutionConfig, RiskConfig, VolatilitySizingConfig, main, simulate_pair
-from strategies.mean_reversion import EntryFilterConfig
+from research.run_backtest import (
+    ExecutionConfig,
+    RiskConfig,
+    VolatilitySizingConfig,
+    main,
+    simulate_pair,
+)
 from strategies.kalman_pair import KalmanObservation, KalmanPairStrategy
+from strategies.mean_reversion import EntryFilterConfig
 from strategies.pair_trading import PairTradingConfig, PairTradingStrategy, SpreadModel
 
 

@@ -1,6 +1,6 @@
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from scripts.seed_daily_bars_from_csv import iter_csv_rows, seed_daily_bars

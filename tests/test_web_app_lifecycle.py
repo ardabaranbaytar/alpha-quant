@@ -59,11 +59,10 @@ class WebAppLifecycleTests(unittest.TestCase):
         started = time.monotonic()
         with patch.object(web, "HermesAuditorHook", return_value=hook), \
              patch.object(web, "HermesService", return_value=service), \
-             patch.object(web, "ExecutionEngine", _Engine):
-            with TestClient(web.app):
-                self.assertTrue(web.app.state.worker_thread.is_alive())
-                self.assertIs(web.app.state.execution_engine.telemetry, hook)
-                self.assertIs(web.app.state.hermes_service, service)
+             patch.object(web, "ExecutionEngine", _Engine), TestClient(web.app):
+            self.assertTrue(web.app.state.worker_thread.is_alive())
+            self.assertIs(web.app.state.execution_engine.telemetry, hook)
+            self.assertIs(web.app.state.hermes_service, service)
         self.assertLess(time.monotonic() - started, 2.0)
         self.assertTrue(web.app.state.worker_stop.is_set())
         self.assertFalse(web.app.state.worker_thread.is_alive())

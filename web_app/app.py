@@ -1,34 +1,33 @@
-import secrets
-import os
 import datetime
 import logging
+import os
+import secrets
 import threading
 from contextlib import asynccontextmanager
 from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
-
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from sqlalchemy import text
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from sqlalchemy import text
 
 from config.database import db
 from config.settings import settings
+from core.analytics import analytics_manager
 from core.signal_generator import signals_hub
+from data_pipeline.scheduler import daily_price_task, hourly_price_task
 from execution.execution_engine import ExecutionEngine
 from hermes.auditor_hook import HermesAuditorHook
 from hermes.ollama_client import OllamaClient
 from hermes.service import HermesService
-from core.analytics import analytics_manager
-from data_pipeline.scheduler import daily_price_task, hourly_price_task
 
 # Uvicorn owns the process console handler; use its logger so worker telemetry is
 # emitted alongside access logs instead of being discarded by an unconfigured
@@ -142,7 +141,7 @@ def read_portfolio_briefing() -> dict:
             legs = conn.execute(text("""
                 SELECT symbol, side, status FROM positions;
             """)).mappings().all()
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Portfolio briefing query failed: %s", exc)
         return {"open_leg_count": 0, "closed_leg_count": 0, "exposure_map": [], "data_available": False}
 
@@ -186,7 +185,7 @@ def _recent_gatekeeper_rejections(request: Request) -> list[dict]:
         return []
     try:
         return engine.recent_gatekeeper_rejections()
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Gatekeeper audit read failed: %s", exc)
         return []
 
@@ -323,7 +322,7 @@ def _background_worker(application: FastAPI):
                     pair = getattr(opportunity, "pair", "UNKNOWN")
                     z_score = getattr(opportunity, "z_score", "N/A")
                 logger.info("[SCAN] Candidate %s | Z-score=%s", pair, z_score)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error("Worker cycle error: %s", e)
         application.state.worker_stop.wait(settings.WORKER_CYCLE_SECONDS)
 
@@ -384,7 +383,7 @@ def dashboard(request: Request):
     try:
         opportunities = signals_hub.get_cached_opportunities()
         metrics = analytics_manager.generate_report(save_csv=False)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error("Dashboard data fetch failed: %s", e)
         opportunities = []
         metrics = {"Total PnL": "$0.00", "Win Rate": "0.00%",
@@ -431,7 +430,7 @@ def positions(request: Request):
             "status": row["status"],
             "pnl": row["unrealized_pnl"],
         } for row in trades]
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error("Positions query failed: %s", e)
 
     return templates.TemplateResponse(
@@ -449,12 +448,12 @@ async def health(request: Request):
         with db.engine.connect() as conn:
             conn.execute(text("SELECT 1;"))
         db_status = "CONNECTED"
-    except Exception:
+    except Exception:  # noqa: BLE001
         db_status = "DISCONNECTED"
     return {
         "status":    "OPERATIONAL" if db_status == "CONNECTED" else "DEGRADED",
         "database":  db_status,
-        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp": datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S"),
     }
 
 

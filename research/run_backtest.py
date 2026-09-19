@@ -21,16 +21,16 @@ thresholds are intentionally independent and out of scope for this module.
 """
 
 import argparse
-from dataclasses import asdict, dataclass
-from datetime import date
 import hashlib
-from importlib.metadata import version
 import json
-from pathlib import Path
 import re
 import subprocess
 import sys
 import tempfile
+from dataclasses import asdict, dataclass
+from datetime import date
+from importlib.metadata import version
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -39,15 +39,21 @@ ROOT = Path(__file__).resolve().parents[1]
 if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 
-from data_pipeline.yfinance_fetcher import DataFetcher
-from strategies.pair_trading import PairTradingConfig, PairTradingStrategy
-from strategies.kalman_pair import KalmanPairConfig, KalmanPairStrategy
-from strategies.mean_reversion import EntryFilterConfig, estimate_hurst
-from research.pair_screener import (ScreenerConfig, YAHOO_SYMBOL_ALIASES, download_research_history,
-                                    download_universe, symbol_sectors, universe_symbols, walk_forward_screen)
 from research.pair_accounting import execution_time, liquidation_pnl
 from research.pair_artifacts import load_available_history, load_history, save_history
+from research.pair_screener import (
+    YAHOO_SYMBOL_ALIASES,
+    ScreenerConfig,
+    download_research_history,
+    download_universe,
+    symbol_sectors,
+    universe_symbols,
+    walk_forward_screen,
+)
 from research.portfolio import PortfolioConfig, PortfolioEngine
+from strategies.kalman_pair import KalmanPairConfig, KalmanPairStrategy
+from strategies.mean_reversion import EntryFilterConfig, estimate_hurst
+from strategies.pair_trading import PairTradingConfig, PairTradingStrategy
 
 DEFAULT_PAIRS = ("AAPL/MSFT", "XOM/CVX", "JPM/BAC", "V/MA", "GOOGL/META", "KO/PEP", "NVDA/AMD")
 

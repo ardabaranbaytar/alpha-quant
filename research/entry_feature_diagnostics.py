@@ -1,9 +1,11 @@
+from typing import ClassVar
+
 import numpy as np
 import pandas as pd
 
 
 class EntryFeatureDiagnostics:
-    FEATURES = [
+    FEATURES: ClassVar[list[str]] = [
         "entry_coint_pvalue",
         "entry_adf_pvalue",
         "entry_spread_z",

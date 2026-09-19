@@ -1,8 +1,8 @@
 import logging
-from pathlib import Path
 import re
 import time
 from io import StringIO
+from pathlib import Path
 
 import pandas as pd
 import requests
@@ -104,7 +104,7 @@ class DataFetcher:
                 for column in ("Ticker", "Symbol"):
                     if column in table.columns:
                         return [str(symbol).replace(".", "-") for symbol in table[column].tolist()]
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             logger.warning("Could not scrape NASDAQ-100 list. Using fallback list: %s", exc)
         return list(FALLBACK_SYMBOLS)
 
@@ -184,7 +184,7 @@ class DataFetcher:
                             if connection.execute(insert_query, params).rowcount > 0:
                                 added += 1
                 logger.info("[%d/%d] %s: %d %s bars.", idx, len(symbols), symbol, added, unit_label)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 logger.error("%s download failed for %s: %s", unit_label.capitalize(), symbol, exc)
 
         logger.info("%s bar injection completed.", unit_label.capitalize())
